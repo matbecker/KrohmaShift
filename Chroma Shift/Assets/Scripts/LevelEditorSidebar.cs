@@ -103,6 +103,7 @@ public class LevelEditorSidebar : MonoBehaviour {
 
 			for(int i = 0; i < levelObjects.Count; i++) 
 			{
+				//TODO fix error here
 				var c2D = currentHeldObject.bc;
 				if(c2D.bounds.Intersects(levelObjects[i].bc.bounds)) 
 				{

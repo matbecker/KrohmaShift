@@ -20,7 +20,7 @@ public class Enemy : LevelObject, IDamageable {
 	{
 		public int health;
 		public int attackPower;
-		public int movementSpeed;
+		public float movementSpeed;
 	}
 
 	public ColourManager colour;
@@ -29,15 +29,20 @@ public class Enemy : LevelObject, IDamageable {
 	[SerializeField] protected ParticleSystem fx;
 	[SerializeField] protected Stats stats;
 	[SerializeField] protected Rigidbody2D rb;
-	[SerializeField] protected BoxCollider2D col;
-	[SerializeField] protected SpriteRenderer sprite;
+	public BoxCollider2D col;
+	public SpriteRenderer sprite;
 	[SerializeField] protected GameObject target;
 	protected Vector2 direction;
 	[SerializeField] protected float distance;
+	public bool isSpawning;
+
+	private Vector3 startPos;
 
 	protected virtual void Awake()
 	{
 		target = GameObject.FindGameObjectWithTag("Player");
+
+		col.enabled = false;
 
 		//disable particle systems
 		foreach (ParticleSystem ps in enemyParticles)
@@ -59,8 +64,11 @@ public class Enemy : LevelObject, IDamageable {
 		{
 			var indexT = (int)ColourWheel.Instance.currentColourTop;
 			var topColour = colour.colors[indexT].color[randShade];
-			enemyParticles[indexT].gameObject.SetActive(true);
-			fx = enemyParticles[indexT];
+			if (enemyParticles != null && enemyParticles.Length > 0 && indexT < enemyParticles.Length) 
+			{
+				enemyParticles[indexT].gameObject.SetActive(true);
+				fx = enemyParticles[indexT];
+			}
 			topColour.a = 1;
 			sprite.color = topColour;
 			colour.currentColourType = (ColourManager.ColourType)ColourWheel.Instance.currentColourTop;
@@ -70,13 +78,25 @@ public class Enemy : LevelObject, IDamageable {
 		{
 			var indexB = (int)ColourWheel.Instance.currentColourBottom;
 			var bottomColour = colour.colors[indexB].color[randShade];
-			enemyParticles[indexB].gameObject.SetActive(true);
-			fx = enemyParticles[indexB];
+			if (enemyParticles != null && enemyParticles.Length > 0 && indexB < enemyParticles.Length) 
+			{
+				enemyParticles[indexB].gameObject.SetActive(true);
+				fx = enemyParticles[indexB];
+			}
 			bottomColour.a = 1;
 			sprite.color = bottomColour;
 			colour.currentColourType = (ColourManager.ColourType)ColourWheel.Instance.currentColourBottom;
 		}
-			
+
+		startPos = transform.position;
+	}
+	public virtual void DisableColliders()
+	{
+		col.enabled = false;
+	}
+	public virtual void EnableColliders()
+	{
+		col.enabled = true;
 	}
 	
 	// Update is called once per frame
@@ -85,10 +105,6 @@ public class Enemy : LevelObject, IDamageable {
 		if (transform.position.y < LevelManager.LEVEL_BOTTOM)
 			Death();
 
-		distance = (target.transform.position - transform.position).magnitude;
-
-		if (distance > 20)
-			Death();
 	}
 	protected virtual void FixedUpdate(){}
 
@@ -107,6 +123,7 @@ public class Enemy : LevelObject, IDamageable {
 	}
 	protected virtual void Death()
 	{
+		col.enabled = false;
 		int rand = Random.Range(0,5);
 
 		if (rand == 0)
@@ -114,6 +131,8 @@ public class Enemy : LevelObject, IDamageable {
 			GameObject powerUp = Instantiate(powerUps[0], col.bounds.center, Quaternion.identity) as GameObject;
 		}
 		EnemySpawner.enemyWave.Remove(this);
+		Debug.Log ("dead");
+
 	}
 	public virtual void Damage(int damageAmount)
 	{
@@ -125,9 +144,4 @@ public class Enemy : LevelObject, IDamageable {
 		}
 	}
 	protected virtual void Move(){}
-
-	protected virtual void SetSize(Vector3 sizeValue, float duration)
-	{
-		transform.DOScale(sizeValue, duration).SetEase(Ease.Linear);
-	}
 }

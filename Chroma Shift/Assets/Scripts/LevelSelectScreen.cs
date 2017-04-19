@@ -141,7 +141,8 @@ public class LevelSelectScreen : MonoBehaviour {
 					{
 						imagePanels[4].rectTransform.DOScaleY(1.0f,0.5f).SetEase(Ease.OutBack, 1.0f).OnComplete(() => 
 						{
-
+							MainMenu.Instance.freezeEventSystem = false;
+							MainMenu.Instance.SetLevelSelectScreenButton();
 						});
 					});
 				});
@@ -150,6 +151,7 @@ public class LevelSelectScreen : MonoBehaviour {
 	}
 	public void CloseLevelPanel()
 	{
+		MainMenu.Instance.freezeEventSystem = true;
 		imagePanels[4].rectTransform.DOScaleY(0.0f,0.5f).SetEase(Ease.InBack,1.0f).OnComplete(() => 
 		{
 			imagePanels[3].rectTransform.DOScaleY(0.0f,0.5f).SetEase(Ease.Linear).OnComplete(() => 
@@ -164,8 +166,8 @@ public class LevelSelectScreen : MonoBehaviour {
 							imagePanels[0].rectTransform.DORotate(new Vector3(-180.0f,0.0f,0.0f),0.5f,RotateMode.Fast).SetDelay(0.25f);
 							imagePanels[5].DOColor(Color.clear,1.0f);
 							MainMenu.Instance.SwitchScreen(0);
+							MainMenu.Instance.freezeEventSystem = false;
 						});
-
 					});
 				});
 			});

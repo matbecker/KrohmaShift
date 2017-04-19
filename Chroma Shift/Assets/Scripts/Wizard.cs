@@ -52,8 +52,6 @@ public class Wizard : Hero {
 		//if the player is hovering start timing their hover
 		if (isHovering)
 			hoverTimer += Time.deltaTime;
-		else
-			hoverTimer = 0.0f;
 
 		//if the timer reaches the hover duration
 		if (hoverTimer >= desiredHoverDuration)
@@ -122,10 +120,8 @@ public class Wizard : Hero {
 			shieldCol.enabled = false;
 			ps.Stop();
 		}
-			
-		
 
-		if (isHovering && Input.GetButtonUp("Jump"))
+		if (Input.GetButtonUp("Jump"))
 		{
 			StopHovering();
 		}
@@ -201,30 +197,24 @@ public class Wizard : Hero {
 
 		var enemy = other.gameObject.GetComponent<Enemy>();
 
-		if (enemy != null && startShieldTimer)
-		{
-			Rigidbody2D enemyRb = enemy.GetComponent<Rigidbody2D>();
-
-			Vector2 force = Vector2.zero;
-
-			//if the enemy lands on top of me
-			if (enemyRb != null && enemy.transform.position.y  - enemy.GetComponent<BoxCollider2D>().bounds.extents.y > transform.position.y + boxCol.bounds.extents.y)
-			{
-				force = Vector2.up * 50.0f;
-			}
-
-			if (enemyRb != null)
-				force = (enemy.transform.position.x < transform.position.x) ? Vector2.left * 100.0f : Vector2.right * 100.0f;
-				
-			enemyRb.AddForce(force);
-		}
+//		if (enemy != null && startShieldTimer)
+//		{
+//			var force = (enemy.transform.position.x < transform.position.x) ? Vector2.left * 100.0f : Vector2.right * 100.0f;
+//
+//			//if the enemy lands on top of me
+//			if (enemy.transform.position.y - enemy.GetComponent<BoxCollider2D>().bounds.extents.y > transform.position.y + 0.1f)
+//			{
+//				force = Vector2.up * 50.0f;
+//			}				
+//			enemy.GetComponent<Rigidbody2D>().AddForce(force);
+//		}
 
 		if (HelperFunctions.GroundCheck(edgeCol, rb))
 		{
 			isHovering = false;
 			canHover = false;
+			hoverTimer = 0.0f;
 		}
-		rb.constraints = RigidbodyConstraints2D.FreezeRotation;
 	}
 
 	private void Hover(int playerID)
@@ -239,7 +229,6 @@ public class Wizard : Hero {
 			//player is now hovering 
 			isHovering = true;
 		}
-
 	}
 
 	private void StopHovering()

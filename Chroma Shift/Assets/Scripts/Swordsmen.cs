@@ -51,4 +51,5 @@ public class Swordsmen : Hero {
 		var block = (canBlock) ? true : false;
 		sword.SetActive(block);
 	}
+
 }

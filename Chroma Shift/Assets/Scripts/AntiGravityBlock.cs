@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using DG.DemiLib;
 using DG.Tweening;
@@ -7,15 +8,22 @@ using DG.Tweening;
 public class AntiGravityBlock : LevelObject {
 
 	[SerializeField] Color grayTransparent;
-	[SerializeField] SpriteRenderer sprite;
-	private Hero h;
-	private float timer;
-	private bool flipped;
-	private bool collided;
+	[SerializeField] Animator anim;
+	private List<Hero> heroes;
+	private int heroCount;
 
-	private void FlipGravity(Rigidbody2D rb)
+	private void Start()
 	{
-		rb.gravityScale *= -1;
+		heroes = new List<Hero>();
+	}
+	public void FlipGravity()
+	{
+
+		foreach (Hero h in heroes) 
+		{
+			h.GetComponent<Rigidbody2D>().gravityScale *= -1;
+		}
+
 	}
 	private void OnCollisionEnter2D(Collision2D other)
 	{
@@ -23,35 +31,17 @@ public class AntiGravityBlock : LevelObject {
 
 		if (hero != null)
 		{
-			h = hero;
-			h.sprite.transform.DOShakePosition(1.0f,0.1f,0,0,false).SetEase(Ease.Linear);
-			//hero.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-			sprite.DOColor(grayTransparent, 1.0f).SetEase(Ease.InOutFlash, 5, 0).OnComplete(() => {
-				bc.enabled = false;
-				flipped = true;
-				h.sprite.transform.position = h.transform.position;
-			});
+			heroes.Add(hero);
+			anim.SetTrigger ("flip");
 		}
 	}
-	private void OnTriggerEnter2D(Collider2D other)
+	private void OnCollisionExit2D(Collision2D other)
 	{
-		if (h != null)
-		{
-			var rb = h.GetComponent<Rigidbody2D>();
-			rb.velocity = Vector2.zero;
-			FlipGravity(rb);
-		}
-			
-	}
+		var hero = other.gameObject.GetComponent<Hero>();
 
-	private void OnTriggerExit2D(Collider2D other)
-	{
-		if (h != null)
+		if (hero != null)
 		{
-			sprite.DOColor(Color.black, 1.0f).OnComplete(() => {
-				flipped = false;
-				bc.enabled = true;
-			});
+			heroes.Remove (hero);
 		}
 	}
 

@@ -21,7 +21,7 @@ public class LevelManager : Photon.MonoBehaviour {
 	private int levelIndex;
 	public float levelTimer;
 	[SerializeField] Transform[] spawnPoints;
-	public const int LEVEL_BOTTOM = -10;
+	public const int LEVEL_BOTTOM = -15;
 	public const int LEVEL_TOP = 15;
 	public SpawnPoint currentSpawnPoint;
 	public SpawnPoint startingPoint;

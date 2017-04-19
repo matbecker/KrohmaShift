@@ -39,10 +39,10 @@ public class MainMenu : MonoBehaviour {
 	private Coroutine delayCor;
 	public bool toCharacterSelect;
 	public bool toLevelEditor;
-	[SerializeField] EventSystem es;
+	public EventSystem es;
 	[SerializeField] Button[] startButtons;
 	private float timer;
-
+	public bool freezeEventSystem;
 
 	void Start () 
 	{
@@ -102,15 +102,21 @@ public class MainMenu : MonoBehaviour {
 			ScreenType = Screen.Settings;
 			break;
 		case 3:
-			animators[currentScreen].SetBool("toMainMenu", false);
-			LevelSelectScreen.Instance.OpenLevelPanel();
-			es.SetSelectedGameObject(menuButtons[newScreenIndex].buttons[0].gameObject);
+			animators [currentScreen].SetBool ("toMainMenu", false);
+			LevelSelectScreen.Instance.OpenLevelPanel ();
 			ScreenType = Screen.LevelSelect;
+			freezeEventSystem = true;
 			break;
 		default:
 			break;
 		}
 		currentScreen = newScreenIndex;
+	}
+	public void SetLevelSelectScreenButton()
+	{
+		var currentMenu = menuButtons [(int)ScreenType];
+		currentMenu.index++;
+		es.SetSelectedGameObject(menuButtons[currentScreen].buttons[currentMenu.index].gameObject);
 	}
 	public IEnumerator DelayAnimation(float delayAmount, Animator anim, string animName, bool playAnim)
 	{
@@ -152,44 +158,47 @@ public class MainMenu : MonoBehaviour {
 	{
 		var currentMenu = menuButtons[(int)ScreenType];
 
-		switch (ScreenType)
+		if (!freezeEventSystem) 
 		{
-		case Screen.MainMenu:
-		case Screen.MultiPlayer:
-		case Screen.Settings:
-		case Screen.LevelSelect:
-			
-			if (axis < 0)
+			switch (ScreenType)
 			{
-				if (timer > 0.2f)
-				{
-					currentMenu.index++;
-					timer = 0.0f;
-				}
-			}
-			else if (axis > 0)
-			{
-				if (timer > 0.2f)
-				{
-					currentMenu.index--;
-					timer = 0.0f;
-				}
-			}
-	
-			if (currentMenu.index < 0)
-				currentMenu.index = currentMenu.buttons.Length - 1;
-			
-			if (currentMenu.index >= currentMenu.buttons.Length)
-				currentMenu.index = 0;
-			
-			es.SetSelectedGameObject(currentMenu.buttons[currentMenu.index].gameObject);
-			break;
-		}
+			case Screen.MainMenu:
+			case Screen.MultiPlayer:
+			case Screen.Settings:
+			case Screen.LevelSelect:
 
+				if (axis < 0)
+				{
+					if (timer > 0.2f)
+					{
+						currentMenu.index++;
+						timer = 0.0f;
+					}
+				}
+				else if (axis > 0)
+				{
+					if (timer > 0.2f)
+					{
+						currentMenu.index--;
+						timer = 0.0f;
+					}
+				}
+
+				if (currentMenu.index < 0)
+					currentMenu.index = currentMenu.buttons.Length - 1;
+
+				if (currentMenu.index >= currentMenu.buttons.Length)
+					currentMenu.index = 0;
+
+				es.SetSelectedGameObject(currentMenu.buttons[currentMenu.index].gameObject);
+				break;
+			}
+		}
 	}
 	private void Submit(int playerID)
 	{
-		menuButtons[currentScreen].buttons[menuButtons[currentScreen].index].onClick.Invoke();
+		if (!freezeEventSystem)
+			menuButtons[currentScreen].buttons[menuButtons[currentScreen].index].onClick.Invoke();
 	}
 	private void Update()
 	{

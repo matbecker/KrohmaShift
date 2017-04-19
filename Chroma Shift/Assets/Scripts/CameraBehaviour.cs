@@ -40,20 +40,18 @@ public class CameraBehaviour : MonoBehaviour {
 
 	void Awake()
 	{
-		center = new Vector3(44.0f,0.0f, -10.0f);
+		center = new Vector3 (44.0f, 0.0f, -10.0f);
 		paused = false;
 		orthoSize = 5;
 
-		if (!inGame)
-		{
+		if (!inGame) {
 			InputManager.Instance.HorizontalMovement += HorizontalMovement;
 			InputManager.Instance.VerticalMovement += VerticalMovement;
 			InputManager.Instance.CameraZoomIn += CameraZoomIn;
 			InputManager.Instance.CameraZoomOut += CameraZoomOut;
 		}
 
-		if (inGame)
-		{
+		if (inGame) {
 			LevelManager.Instance.OnHeroSpawned += OnHeroSpawned;
 			LevelManager.Instance.OnHeroDeath += OnHeroDeath;
 //			foreach(var objList in LevelLoader.Instance.objectLists) {
@@ -74,11 +72,6 @@ public class CameraBehaviour : MonoBehaviour {
 		}
 			
 	}
-//	public void SetInitialPosition(Vector3 pos)
-//	{
-//		transform.position = pos;
-//		child.transform.position = transform.position;
-//	}
 	public void SetPauseScreen()
 	{
 		paused = true;
@@ -112,7 +105,10 @@ public class CameraBehaviour : MonoBehaviour {
 	{
 		if(hero.playerID != 0)
 			return;
+		
 		this.hero = hero;
+
+		//set the follow target
 		hero.isFollowTarget = true;
 		LoadingScreen.Instance.SetCanvasCamera();
 	}
@@ -213,10 +209,13 @@ public class CameraBehaviour : MonoBehaviour {
 	public void SetCameraTarget(Hero h)
 	{
 		hero = h;
+
+		//new hero is now the follow target
 		hero.isFollowTarget = true;
 	}
 	private void OnHeroDeath(Hero hero)
 	{
+		//if there is an alive hero reset the camera target
 		if (HeroManager.Instance.numPlayers > 0)
 			SetCameraTarget(LevelManager.Instance.GetAliveHero());
 	}

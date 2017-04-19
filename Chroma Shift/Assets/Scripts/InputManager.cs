@@ -46,7 +46,7 @@ public class InputManager : MonoBehaviour {
 	public event KeyDownEvent CameraZoomOut;
 	public event AxisEvent RotateBow;
 	public event AxisEvent SwitchButton;
-	public event AxisEvent Slide;
+	public event KeyDownEvent SlideUp;
 	public event KeyDownEvent Submit;
 	private Player[] players;
 	private int numPlayers;
@@ -164,9 +164,9 @@ public class InputManager : MonoBehaviour {
 			{
 				SwitchButton(playerID, player.GetAxis("SwitchButton"));
 			}
-			if (Slide != null)
+			if (player.GetButton("Slide") && SlideUp != null)
 			{
-				Slide(playerID, player.GetAxis("Slide"));
+				SlideUp(playerID);
 			}
 			if (Submit != null && player.GetButtonDown("Submit"))
 			{

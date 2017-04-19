@@ -7,11 +7,14 @@ public class ProjectileParticles : MonoBehaviour {
 	// Use this for initialization
 	void Start () 
 	{
-		Destroy(gameObject, 5.0f);
 	}
 	
 	// Update is called once per frame
-	void Update () {
-		
+	void Update () 
+	{
+		if (transform.parent == null) 
+		{
+			Destroy(gameObject, 5.0f);
+		}
 	}
 }

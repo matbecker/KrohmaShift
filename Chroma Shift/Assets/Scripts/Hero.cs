@@ -64,7 +64,8 @@ public class Hero : Photon.MonoBehaviour, IProjectileIgnore {
 	public bool isSpawning;
 	public int playerID;
 	public bool alive;
-
+	private int delay = 0;
+	private Hero otherHero;
 
 
 	//Online Synchronization variables
@@ -93,7 +94,7 @@ public class Hero : Photon.MonoBehaviour, IProjectileIgnore {
 			InputManager.Instance.UnBlock += UnBlock;
 			InputManager.Instance.SwitchColour += SwitchColour;
 			InputManager.Instance.SwitchShade += SwitchShade;
-			InputManager.Instance.Slide += Slide;
+			InputManager.Instance.SlideUp += Slide;
 			LevelManager.Instance.Restart += RestartLevel;
 		}
 		if (PauseOverlay.Instance)
@@ -139,6 +140,14 @@ public class Hero : Photon.MonoBehaviour, IProjectileIgnore {
 			rb.gravityScale = 0;
 		}
 		SetupSprite();
+
+		foreach (Hero h in LevelManager.Instance.heroes) 
+		{
+			if (h.playerID != playerID) 
+			{
+				otherHero = h;
+			}
+		}
 	}
 
 	public void SetupSprite()
@@ -164,7 +173,7 @@ public class Hero : Photon.MonoBehaviour, IProjectileIgnore {
 				InputManager.Instance.UnBlock -= UnBlock;
 				InputManager.Instance.SwitchColour -= SwitchColour;
 				InputManager.Instance.SwitchShade -= SwitchShade;
-				InputManager.Instance.Slide -= Slide;
+				InputManager.Instance.SlideUp -= Slide;
 			}
 		}
 		if (PauseOverlay.Instance)
@@ -207,7 +216,6 @@ public class Hero : Photon.MonoBehaviour, IProjectileIgnore {
 		//lerp position towards where the player is headed over the network
 		rb.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
 	}
-
 
 	// Update is called once per frame
 	protected virtual void Update () 
@@ -310,36 +318,48 @@ public class Hero : Photon.MonoBehaviour, IProjectileIgnore {
 
 		if (transform.localPosition.y < LevelManager.LEVEL_BOTTOM || transform.localPosition.y > LevelManager.LEVEL_TOP)
 			OffMap();
-			
 
-//		if (transform.position.y < -5.0f || transform.position.y > 5.0f)
-//		{
-//			UpdateCameraTarget();
-//		}
+		if (!isFollowTarget && alive) 
+		{
+			var dist = Mathf.Abs(transform.position.y - otherHero.transform.position.y);
+
+			if (dist > 6.0f && grounded)
+			{
+				transform.position = otherHero.transform.position;
+				rb.gravityScale = otherHero.rb.gravityScale;
+			}
+		}
+
 	}
 
-	int delay = 0;
-	void FixedUpdate()
+	private void FixedUpdate()
 	{
-		if(playerID == 0)
-			return;
-		
-		var camBehaviour = CameraBehaviour.Instance;
-
-		if(!camBehaviour.isSetup)
-			return;
-
-		if(delay > 5) 
+		//dont bother attempting to keep a dead hero on screen
+		if (alive) 
 		{
-			var cam = camBehaviour.cam;
-			var vpLeft = new Vector3(0f, 0f, -10f);
-			var vpRight = new Vector3(1f, 0f, -10f);
-			var left = cam.ViewportToWorldPoint(vpLeft) + (Vector3.right * 0.25f);
-			var right = cam.ViewportToWorldPoint(vpRight) + (Vector3.left * 0.25f);
-			rb.position = new Vector2(Mathf.Clamp(rb.position.x, left.x, right.x), rb.position.y);
+			//only keep the hero in bounds if the camera is not following them
+			if (isFollowTarget)
+				return;
+		
+			var camBehaviour = CameraBehaviour.Instance;
+
+			if (!camBehaviour.isSetup)
+				return;
+
+			if (delay > 5) {
+				var cam = camBehaviour.cam;
+				var vpLeft = new Vector3 (0f, 0f, -10f);
+				var vpRight = new Vector3 (1f, 0f, -10f);
+				var left = cam.ViewportToWorldPoint (vpLeft) + (Vector3.right * 0.25f);
+				var right = cam.ViewportToWorldPoint (vpRight) + (Vector3.left * 0.25f);
+				rb.position = new Vector2 (Mathf.Clamp (rb.position.x, left.x, right.x), rb.position.y);
+			} else
+				delay++;
 		}
-		else 
-			delay++;
+
+//		if(grounded)
+//			rb.velocity = new Vector2 (rb.velocity.x * 0.95f, rb.velocity.y);
+
 	}
 	private void CheckShieldFull()
 	{
@@ -520,29 +540,37 @@ public class Hero : Photon.MonoBehaviour, IProjectileIgnore {
 	}
 	private void Death(float timePenalty)
 	{
+		//increase amount of dead heroes
 		HeroManager.Instance.deadPlayers++;
 		LevelManager.Instance.levelTimer -= timePenalty;
 		PlayerUI.Instance.TimerFlash();
 		StarBehaviour.Instance.ChangeDuration(timePenalty); 
 		LevelManager.Instance.InvokeHeroDeath(this);
 
+		//if all the heroes are dead respawn them
 		if (HeroManager.Instance.numPlayers == 0)
 		{
 			Respawn();
 		}
 		else
 		{
-			gameObject.SetActive(false);
+			//move the dead hero off screen
+			transform.position = new Vector3 (-15.0f, 0.0f, -10.0f);
+			//freeze their position 
+			rb.constraints = RigidbodyConstraints2D.FreezePosition;
+			//they are no longer the follow target
 			isFollowTarget = false;
 		}
 	}
 	public void Respawn()
 	{
+		//decrease the amount of dead heroes
 		HeroManager.Instance.deadPlayers--;
-		gameObject.SetActive(true);
 		canSlide = false;
 		stats.currentHealth = stats.maxHealth;
 		PlayerUI.Instance.SetHealthBarColour(this, Color.black, true);
+		transform.localEulerAngles = Vector3.zero;
+		rb.constraints = RigidbodyConstraints2D.FreezeRotation;
 		transform.position = LevelManager.Instance.currentSpawnPoint.transform.position;
 		rb.velocity = Vector2.zero;
 		OnHeroSpawn();
@@ -553,7 +581,7 @@ public class Hero : Photon.MonoBehaviour, IProjectileIgnore {
 	private void RestartLevel()
 	{
 		canSlide = false;
-		stats.colourShifts = 1;
+//		stats.colourShifts = 1;
 		stats.currentHealth = stats.maxHealth;
 		transform.position = LevelManager.Instance.currentSpawnPoint.transform.position;
 		rb.velocity = Vector2.zero;
@@ -577,17 +605,12 @@ public class Hero : Photon.MonoBehaviour, IProjectileIgnore {
 	{
 		rb.gravityScale = 1.0f;
 	}
-	private void Slide(int playerID, float axis)
+	private void Slide(int playerID)
 	{
 		if (canSlide)
 		{
-			if (axis != 0)
-			{
-				canSlide = true;
-				var force = (axis > 0) ? Vector2.up * 5.0f : Vector2.down * 5.0f;
-				edgeCol.enabled = false;
-				rb.AddForce(force);
-			}
+			//edgeCol.enabled = false;
+			rb.AddForce (Vector2.up * 5.0f);
 		}
 	}
 	private void UpdateCameraTarget()
@@ -601,7 +624,20 @@ public class Hero : Photon.MonoBehaviour, IProjectileIgnore {
 	{ 
 		canSlide = false;
 	}
+	private void OnTriggerEnter2D(Collider2D other)
+	{
+		var powerUp = other.gameObject.GetComponent<PowerUp> ();
 
+		if (powerUp != null) 
+		{
+			if (stats.colourShifts < 5) 
+			{
+				stats.colourShifts++;
+				PlayerUI.Instance.SetColourShifts (this);
+				Destroy (other.gameObject);
+			}
+		}			
+	}
 	protected virtual void OnCollisionEnter2D(Collision2D other)
 	{
 		var enemy = other.gameObject.GetComponent<Enemy>();
@@ -611,13 +647,6 @@ public class Hero : Photon.MonoBehaviour, IProjectileIgnore {
 			other.gameObject.SendMessage("Damage", 2, SendMessageOptions.DontRequireReceiver);
 
 			stats.currentShieldStrength -= 2.0f;
-		}
-
-		if (other.collider.CompareTag("ShiftPowerUp") && stats.colourShifts < 5)
-		{
-			stats.colourShifts++;
-			PlayerUI.Instance.SetColourShifts(this);
-			Destroy(other.gameObject);
 		}
 	}
 	protected virtual void OnCollisionStay2D(Collision2D other)

@@ -52,11 +52,7 @@ public class Bomber : Enemy {
 		{
 			grounded = true;
 		}
-		if (enemy != null)
-		{
-			return;
-		}
-		if (hero != null || other.gameObject.CompareTag("Barricade"))
+		if (hero != null)
 		{
 			var force = (hero.transform.position.x < transform.position.x) ? Vector2.left * 100.0f : Vector2.right * 100.0f;
 			hero.GetComponent<Rigidbody2D>().AddForce(force);
@@ -66,12 +62,13 @@ public class Bomber : Enemy {
 				Death();
 			});
 		}
-		if (ground == null)
+		if(other.gameObject.CompareTag("Barricade"))
 		{
-			
+			transform.DOScale(Vector3.one * 2f, 0.2f).OnComplete(() => 
+			{
+				Death();
+			});
 		}
-
-
 		base.OnCollisionEnter2D(other);
 
 	}

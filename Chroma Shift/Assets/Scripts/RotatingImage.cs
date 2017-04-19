@@ -16,11 +16,11 @@ public class RotatingImage : MonoBehaviour {
 			image = gameObject.GetComponent<Image>();
 			image.color = new Color(Random.value, Random.value, Random.value, 1.0f);
 		}
-		else
-		{
-			sprite = gameObject;
-			sprite.GetComponent<SpriteRenderer>().color = new Color(Random.value, Random.value, Random.value, 1.0f);
-		}
+//		else
+//		{
+//			sprite = gameObject;
+//			sprite.GetComponentInChildren<SpriteRenderer>().color = new Color(Random.value, Random.value, Random.value, 1.0f);
+//		}
 	}
 	
 	// Update is called once per frame
@@ -39,18 +39,18 @@ public class RotatingImage : MonoBehaviour {
 				image.color = new Color(Random.value, Random.value, Random.value, 1.0f);
 			}
 		}
-		else
-		{
-			sprite.transform.Rotate(Vector3.up * (rotationSpeed * Time.deltaTime));
-
-			Vector3 euler = sprite.transform.localRotation.eulerAngles;
-
-			if (euler.y > 180)
-			{
-				euler.y -= 180;
-				sprite.transform.localRotation = Quaternion.Euler(euler);
-				sprite.GetComponent<SpriteRenderer>().color = new Color(Random.value, Random.value, Random.value, 1.0f);
-			}
-		}
+//		else
+//		{
+//			sprite.transform.Rotate(Vector3.up * (rotationSpeed * Time.deltaTime));
+//
+//			Vector3 euler = sprite.transform.localRotation.eulerAngles;
+//
+//			if (euler.y > 180)
+//			{
+//				euler.y -= 180;
+//				sprite.transform.localRotation = Quaternion.Euler(euler);
+//				sprite.GetComponentInChildren<SpriteRenderer>().color = new Color(Random.value, Random.value, Random.value, 1.0f);
+//			}
+//		}
 	}
 }

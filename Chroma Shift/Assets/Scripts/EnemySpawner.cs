@@ -78,6 +78,8 @@ public class EnemySpawner : LevelObject, IProjectileIgnore {
 				var s = barriers[i].GetComponent<SpriteRenderer>();
 				s.DOColor(Color.black, 2.0f);
 				barriers[i].GetComponent<BoxCollider2D>().enabled = true;
+				var t = barriers [i].transform;
+				t.DOScale (new Vector3 (t.localScale.x, t.localScale.y * 1.5f, t.localScale.z), 0.5f);
 			}
 			PlayerUI.Instance.currentEnemiesBottom.DOColor(Color.black, 2.0f);
 			PlayerUI.Instance.currentEnemiesTop.DOColor(Color.white, 2.0f);
@@ -92,7 +94,18 @@ public class EnemySpawner : LevelObject, IProjectileIgnore {
 				int enemyType = Random.Range(0,enemyTypes.Length);
 
 				//instantiate a random enemy type at the enemyspawner location
-				Enemy enemyObj = Instantiate(enemyTypes[enemyType], transform.position + new Vector3(Random.insideUnitCircle.x * spawnCircleWidth, Random.insideUnitCircle.y * spawnCircleHeight, transform.position.z), Quaternion.identity) as Enemy;
+				Enemy enemyObj = Instantiate(enemyTypes[enemyType], transform.position + new Vector3(Random.insideUnitCircle.x * spawnCircleWidth, spawnCircleHeight, transform.position.z), Quaternion.identity) as Enemy;
+				//disable box collider
+				enemyObj.isSpawning = true;
+				enemyObj.DisableColliders();
+				enemyObj.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezePosition;
+				enemyObj.sprite.gameObject.transform.localScale = Vector3.zero;
+				enemyObj.sprite.transform.DOScale(Vector3.one, 1.0f).OnComplete(() => 
+				{
+					enemyObj.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezeRotation;
+					enemyObj.EnableColliders();
+					enemyObj.isSpawning = false;
+				});
 				//add the enemy to the wave list
 				enemyWave.Add(enemyObj);
 			}
@@ -112,11 +125,6 @@ public class EnemySpawner : LevelObject, IProjectileIgnore {
 		if (hasWaveStarted)
 		{
 			Vector3 dist = transform.position - h.transform.position;
-
-			if (dist.magnitude > 10)
-			{
-				ClearEnemies();
-			}
 			
 			PlayerUI.Instance.currentEnemiesBottom.text = enemyWave.Count.ToString();
 			PlayerUI.Instance.currentEnemiesTop.text = enemyWave.Count.ToString();
@@ -141,9 +149,7 @@ public class EnemySpawner : LevelObject, IProjectileIgnore {
 			gameObject.SetActive(false);
 			hasWaveStarted = false;
 			PauseOverlay.Instance.canPause = true;
-		}
-
-
+		} 
 	}
 	public static void ClearEnemies()
 	{

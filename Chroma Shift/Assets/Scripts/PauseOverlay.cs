@@ -30,20 +30,27 @@ public class PauseOverlay : MonoBehaviour {
 	public event FreezeEvent Freeze;
 	public event FreezeEvent UnFreeze;
 	public EventSystem es;
-
+	private int buttonIndex;
+	private float timer;
 
 	// Use this for initialization
 	void Start () 
 	{
 		InputManager.Instance.Pause += TogglePause;
+		InputManager.Instance.Submit += Submit;
+		InputManager.Instance.SwitchButton += SwitchButton;
 		sprite.color = Color.clear;
 		isPaused = false;
 		canPause = true;
 	}
 	void OnDestroy()
 	{
-		if (InputManager.Instance)
+		if (InputManager.Instance) 
+		{
 			InputManager.Instance.Pause -= TogglePause;
+			InputManager.Instance.Submit -= Submit;
+			InputManager.Instance.SwitchButton -= SwitchButton;
+		}
 	}
 	public void TogglePause(int playerID)
 	{
@@ -60,7 +67,7 @@ public class PauseOverlay : MonoBehaviour {
 				}
 				buttonPanel.transform.DOScale(Vector3.one, 2.0f).SetDelay(3.0f).SetEase(Ease.OutBounce, 0.5f).OnComplete(() => 
 				{
-					es.SetSelectedGameObject(pauseButtons[0].gameObject);
+					es.SetSelectedGameObject(pauseButtons[buttonIndex].gameObject);
 					canPause = true;
 				});
 
@@ -118,22 +125,41 @@ public class PauseOverlay : MonoBehaviour {
 		}
 	}
 
-	public void ToggleButtonSize(GameObject obj)
-	{
-		var size = (obj.transform.localScale.x > 1.0f) ? Vector3.one : Vector3.one * 1.1f;
-		obj.transform.DOScale(size, 0.5f);
-	}
 
-	public void ButtonClick(GameObject obj)
+	private void Submit(int playerID)
 	{
-		obj.transform.DOScale(Vector3.one * 0.9f, 0.25f).OnComplete(() => 
-		{
-			obj.transform.DOScale(Vector3.one, 0.25f);
-		});
+		if (isPaused)
+			pauseButtons[buttonIndex].onClick.Invoke();
 	}
-
 	void Update () 
 	{
+		timer += Time.deltaTime;
+	}
+	private void SwitchButton(int playerID, float axis)
+	{
+		if (isPaused) 
+		{
+			if (axis > 0) {
+				if (timer > 0.2f) {
+					buttonIndex--;
+					timer = 0.0f;
+				}
+			}
+			if (axis < 0) {
+				if (timer > 0.2f) {
+					buttonIndex++;
+					timer = 0.0f;
+				}
+			}
+
+			if (buttonIndex < 0) {
+				buttonIndex = pauseButtons.Length - 1;
+			}
+			if (buttonIndex >= pauseButtons.Length) {
+				buttonIndex = 0;
+			}
+			es.SetSelectedGameObject (pauseButtons [buttonIndex].gameObject);
+		}
 
 	}
 }
