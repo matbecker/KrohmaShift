@@ -35,8 +35,8 @@ public class Enemy : LevelObject, IDamageable {
 	protected Vector2 direction;
 	[SerializeField] protected float distance;
 	public bool isSpawning;
-
-	private Vector3 startPos;
+	public Vector3 desiredSize;
+	public EnemySpawner spawner;
 
 	protected virtual void Awake()
 	{
@@ -87,8 +87,6 @@ public class Enemy : LevelObject, IDamageable {
 			sprite.color = bottomColour;
 			colour.currentColourType = (ColourManager.ColourType)ColourWheel.Instance.currentColourBottom;
 		}
-
-		startPos = transform.position;
 	}
 	public virtual void DisableColliders()
 	{
@@ -104,7 +102,18 @@ public class Enemy : LevelObject, IDamageable {
 	{
 		if (transform.position.y < LevelManager.LEVEL_BOTTOM)
 			Death();
-
+		
+		if (spawner != null) 
+		{
+			if (transform.position.x < spawner.barriers [0].transform.position.x) 
+			{
+				Death ();
+			}
+			if (transform.position.x > spawner.barriers [1].transform.position.x) 
+			{
+				Death ();
+			}
+		}
 	}
 	protected virtual void FixedUpdate(){}
 

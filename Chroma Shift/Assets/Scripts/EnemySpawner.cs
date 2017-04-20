@@ -11,7 +11,7 @@ public class EnemySpawner : LevelObject, IProjectileIgnore {
 	[SerializeField] int minEnemies;
 	[SerializeField] int maxEnemies;
 	public static List<Enemy> enemyWave;
-	[SerializeField] GameObject[] barriers;
+	public GameObject[] barriers;
 	public bool hasWaveStarted;
 	private bool isWaveOver;
 	private bool startLerp;
@@ -79,7 +79,7 @@ public class EnemySpawner : LevelObject, IProjectileIgnore {
 				s.DOColor(Color.black, 2.0f);
 				barriers[i].GetComponent<BoxCollider2D>().enabled = true;
 				var t = barriers [i].transform;
-				t.DOScale (new Vector3 (t.localScale.x, t.localScale.y * 1.5f, t.localScale.z), 0.5f);
+				//t.DOScale (new Vector3 (t.localScale.x, t.localScale.y * 1.5f, t.localScale.z), 0.5f);
 			}
 			PlayerUI.Instance.currentEnemiesBottom.DOColor(Color.black, 2.0f);
 			PlayerUI.Instance.currentEnemiesTop.DOColor(Color.white, 2.0f);
@@ -100,10 +100,11 @@ public class EnemySpawner : LevelObject, IProjectileIgnore {
 				enemyObj.DisableColliders();
 				enemyObj.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezePosition;
 				enemyObj.sprite.gameObject.transform.localScale = Vector3.zero;
-				enemyObj.sprite.transform.DOScale(Vector3.one, 1.0f).OnComplete(() => 
+				enemyObj.sprite.transform.DOScale(enemyObj.desiredSize, 1.0f).OnComplete(() => 
 				{
 					enemyObj.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezeRotation;
 					enemyObj.EnableColliders();
+					enemyObj.spawner = this;
 					enemyObj.isSpawning = false;
 				});
 				//add the enemy to the wave list

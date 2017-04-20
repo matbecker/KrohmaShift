@@ -40,7 +40,8 @@ public class CameraBehaviour : MonoBehaviour {
 
 	void Awake()
 	{
-		center = new Vector3 (44.0f, 0.0f, -10.0f);
+		var c = (maxPos.x + minPos.x) / 2;
+		center = new Vector3(c, 0.0f, -10.0f);
 		paused = false;
 		orthoSize = 5;
 

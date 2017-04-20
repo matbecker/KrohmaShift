@@ -15,6 +15,7 @@ public class Bomber : Enemy {
 		stats.attackPower = Random.Range(1,4);
 		//fast movement
 		stats.movementSpeed = Random.Range(4,7);
+		desiredSize = new Vector3 (1.0f, 0.75f, 1.0f);
 	}
 	// Use this for initialization
 	protected override void Start () 

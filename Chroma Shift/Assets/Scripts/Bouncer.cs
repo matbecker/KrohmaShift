@@ -30,6 +30,8 @@ public class Bouncer : Enemy {
 		stats.attackPower = Random.Range(4,8);
 		//slow movement
 		stats.movementSpeed = Random.Range(1,3);
+		desiredSize = Vector3.one;
+		SetBouncerSize();
 	}
 	// Use this for initialization
 	protected override void Start () 
@@ -38,7 +40,6 @@ public class Bouncer : Enemy {
 		//rb.constraints = RigidbodyConstraints2D.FreezeRotation;
 		type = EnemyType.Bouncer;
 		direction = (Random.value > 0.5f) ? Vector2.right : Vector2.left;
-		SetBouncerSize();
 	}
 	protected override void Update ()
 	{
@@ -128,6 +129,7 @@ public class Bouncer : Enemy {
 			break;
 		}
 		Shrink (size);
+
 	}
 	private void Shrink(Vector3 amount)
 	{

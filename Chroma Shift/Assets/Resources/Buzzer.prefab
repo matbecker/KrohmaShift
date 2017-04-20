@@ -53,7 +53,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011372098506}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -16.424456, y: -57.652573, z: 0}
+  m_LocalPosition: {x: -14.329854, y: -1.6930822, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4026649365143812}
@@ -149,8 +149,8 @@ MonoBehaviour:
   isSpawning: 0
   state: 0
   childTransform: {fileID: 4026649365143812}
-  frequency: 7
-  amplitude: 1
+  frequency: 3
+  amplitude: 0.5
   movementSpeedRangeMin: 3
   movementSpeedRangeMax: 5
 --- !u!114 &114270035937032836

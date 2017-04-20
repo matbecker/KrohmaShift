@@ -23,6 +23,8 @@ public class Buzzer : Enemy {
 		stats.attackPower = Random.Range(1,3);
 		//medium speed
 		stats.movementSpeed = Random.Range(movementSpeedRangeMin,movementSpeedRangeMax);
+
+		desiredSize = new Vector3 (1.0f, 0.25f, 1.0f);
 	}
 	// Use this for initialization
 	protected override void Start () 
@@ -56,13 +58,15 @@ public class Buzzer : Enemy {
 	}
 	protected override void Move ()
 	{
-		if (distance > 1.0f)
+		if (distance > 2.0f)
 		{
 			state = State.None;
-			childTransform.DOScale (new Vector3 (childTransform.localScale.x + 0.2f, childTransform.localScale.y + 0.05f, childTransform.localScale.z), 0.25f).SetLoops (2, LoopType.Yoyo).OnComplete (() => {
+			//childTransform.GetComponent<SpriteRenderer>().transform.DOScale(new Vector3 (childTransform.localScale.x, childTransform.localScale.y + 0.05f, childTransform.localScale.z), 0.25f).SetLoops (2, LoopType.Yoyo).OnComplete (() => 
+			childTransform.DORotate(new Vector3(0.0f,0.0f,360.0f), 0.25f, RotateMode.FastBeyond360).OnComplete(() => 
+			{
 				state = State.Swoop;
+				return;	
 			});
-			return;
 		}
 		direction = target.transform.position - transform.position;
 		direction.Normalize();
@@ -86,20 +90,20 @@ public class Buzzer : Enemy {
 	}
 	private void Avoid()
 	{
-		if (frequency < 20.0f && amplitude < 5.0f) 
-		{
-			frequency = 20.0f;
-			amplitude = 5.0f;
-			state = State.Move;
-			return;
-		}
+//		if (frequency < 20.0f && amplitude < 5.0f) 
+//		{
+//			frequency = 20.0f;
+//			amplitude = 5.0f;
+//			state = State.Move;
+//			return;
+//		}
 		direction = transform.position - target.transform.position;
 		direction.Normalize();
-		frequency = 30.0f;
-		frequency -= 0.1f;
-		amplitude = 30.0f;
-		amplitude -= 0.5f;
-		rb.velocity = new Vector2(direction.x * stats.movementSpeed, amplitude * Mathf.Sin (Time.time * frequency));
+//		frequency = 30.0f;
+//		frequency -= 0.1f;
+//		amplitude = 30.0f;
+//		amplitude -= 0.5f;
+		rb.velocity = new Vector2(direction.x * stats.movementSpeed, 0f);
 	}
 	protected override void Death ()
 	{
@@ -108,24 +112,20 @@ public class Buzzer : Enemy {
 	}
 	protected override void OnCollisionEnter2D(Collision2D other)
 	{
-		
+		var hero = other.gameObject.GetComponent<Hero> ();
 		//if the hero lands on top of me
-		if (other.collider.CompareTag("Player") && other.transform.position.y > transform.position.y + sprite.sprite.bounds.extents.y)
+		if (hero != null)
 		{
-			other.gameObject.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 200);
-			Death();
-			return;
+			if (hero.transform.position.y > transform.position.y + sprite.sprite.bounds.extents.y) {
+				other.gameObject.GetComponent<Rigidbody2D> ().AddForce (Vector2.up * 200);
+				Death ();
+				return;
+			} 
+			else 
+			{
+				base.OnCollisionEnter2D(other);
+				state = State.Avoid;
+			}
 		}
-		base.OnCollisionEnter2D(other);
-//		//if i swoop at the hero 
-//		if (other.collider.CompareTag("Player") && other.transform.position.y < transform.position.y)
-//		{				
-//			other.gameObject.SendMessage("Damage", stats.attackPower, SendMessageOptions.DontRequireReceiver);
-//
-//			timer = 0.0f;
-//
-//			state = State.Avoid;
-//			}
-//		}
 	}
 }
