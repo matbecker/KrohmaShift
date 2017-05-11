@@ -167,33 +167,38 @@ public class Bouncer : Enemy {
 		}
 		base.OnCollisionEnter2D(other);
 
-		if (rb.gravityScale == 10.0f)
-		{
+		if (rb.gravityScale == 10.0f && hero == null) {
 			rb.constraints = RigidbodyConstraints2D.FreezeAll;
 
 			var weight = (stats.health > 4) ? 0.5f : 0.2f;
-			CameraBehaviour.Instance.Shake(0.2f,0.0f,weight,false);
+			CameraBehaviour.Instance.Shake (0.2f, 0.0f, weight, false);
 
-			transform.DOScale(sprite.transform.localScale * 1.2f, 0.2f)
-				.SetLoops(5, LoopType.Yoyo)
-				.SetEase(Ease.Linear)
-				.OnComplete(() => {
+			transform.DOScale (sprite.transform.localScale * 1.1f, 0.2f)
+				.SetLoops (5, LoopType.Yoyo)
+				.SetEase (Ease.Linear)
+				.OnComplete (() => {
 				rb.constraints = RigidbodyConstraints2D.FreezeRotation;
 				rb.gravityScale = 1.0f;
 				spinning = false;
 				grounded = true;
-				Jump();
+				Jump ();
+				return;
 			});
-			fx.Play();
+
+
+			fx.Play ();
+		} else if (rb.gravityScale == 10.0f && hero != null) 
+		{
+			
 		}
-		if (other.gameObject.layer == HelperFunctions.collidableLayerId)
+		if (other.gameObject.layer == HelperFunctions.collidableLayerId || hero != null)
 		{
 			spinning = false;
 			rb.gravityScale = 1;
 			grounded = true;
 			if(scaleTween == null)
 			{
-				scaleTween = sprite.transform.DOScale(sprite.transform.localScale * 1.4f, 0.15f)
+				scaleTween = sprite.transform.DOScale(sprite.transform.localScale * 1.3f, 0.15f)
 						.SetLoops(2, LoopType.Yoyo)
 						.OnComplete(() => {
 							Jump();

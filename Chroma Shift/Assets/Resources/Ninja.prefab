@@ -796,7 +796,7 @@ MonoBehaviour:
     attackSpeed: 0
     attackCooldownRate: 0.2
     currentShieldStrength: 0
-    shieldCapacity: 0.5
+    shieldCapacity: 1
     maxVelocity: {x: 7, y: 10}
     jumpForce: {x: 0, y: 250}
     movementForce: {x: 11, y: 0}
